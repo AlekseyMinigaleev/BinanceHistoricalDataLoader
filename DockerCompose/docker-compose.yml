@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mongo_container
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok || 0' mongo:27017/test"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  binance_loader:
+    build:
+      context: ../API
+      dockerfile: Dockerfile
+    container_name: binance_loader_container
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://user:password@mongo:27017/
+      - ASPNETCORE_URLS=http://+:5000;
+    ports:
+      - "5000:5000"
+
+volumes:
+  mongo_data:
