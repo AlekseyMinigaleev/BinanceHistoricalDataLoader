@@ -1,3 +1,4 @@
+using API.Extensions;
 using Infrastructure;
 using System.Reflection;
 
@@ -12,6 +13,8 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+await app.InitApp();
 
 app.UseSwagger();
 app.UseSwaggerUI();
