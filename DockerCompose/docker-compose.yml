@@ -19,8 +19,8 @@ services:
 
   binance_loader:
     build:
-      context: ../API
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: API/Dockerfile
     container_name: binance_loader_container
     depends_on:
       mongo:
