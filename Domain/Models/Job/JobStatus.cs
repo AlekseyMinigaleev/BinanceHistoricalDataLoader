@@ -5,5 +5,6 @@
         InProcessing,
         Completed,
         Error,
+        NotStarted,
     }
 }
