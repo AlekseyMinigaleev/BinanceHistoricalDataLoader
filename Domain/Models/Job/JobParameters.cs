@@ -1,6 +1,6 @@
 ﻿namespace Domain.Models.Job
 {
-    public class JopParameters
+    public class JobParameters
     {
         public ICollection<string> Symbols { get; set; }
 

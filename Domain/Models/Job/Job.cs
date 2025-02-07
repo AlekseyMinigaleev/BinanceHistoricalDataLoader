@@ -10,7 +10,7 @@
 
         public Guid? ReportId { get; set; }
 
-        public JopParameters Parameters { get; set; }
+        public JobParameters Parameters { get; set; }
 
         public string? ErrorMessage { get; set; }
     }
