@@ -1,4 +1,5 @@
 using API.Extensions;
+using Hangfire;
 using Infrastructure;
 using System.Reflection;
 
@@ -18,6 +19,7 @@ await app.InitApp();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseHangfireDashboard();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();

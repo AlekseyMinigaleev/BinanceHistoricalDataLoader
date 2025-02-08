@@ -1,4 +1,6 @@
-﻿using Infrastructure.MongoDb;
+﻿using Hangfire;
+using Infrastructure.Hangfire;
+using Infrastructure.MongoDb;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +13,7 @@ namespace Infrastructure
            IConfiguration configuration)
         {
             services.AddMongoDb(configuration);
+            services.AddHangfire(configuration);
 
             return services;
         }
