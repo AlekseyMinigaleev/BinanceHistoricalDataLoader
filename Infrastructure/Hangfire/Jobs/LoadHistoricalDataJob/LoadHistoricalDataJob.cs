@@ -104,7 +104,7 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
                 cancellationToken: cancellationToken);
         }
 
-        private async Task<CandlestickWithKlines> CreateCandlesticksWithLinksAndLinksAsync(
+        private async Task<CandlestickWithKlinesDTO> CreateCandlesticksWithLinksAndLinksAsync(
             JobParameters parameters,
             Interval interval,
             CancellationToken cancellationToken)
@@ -135,7 +135,7 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
                 candlesticks.Add(candlestick);
             }
 
-            return new CandlestickWithKlines(candlesticks, allKlines);
+            return new CandlestickWithKlinesDTO(candlesticks, allKlines);
         }
 
         private async Task<List<Kline>> FetchBinanceData(

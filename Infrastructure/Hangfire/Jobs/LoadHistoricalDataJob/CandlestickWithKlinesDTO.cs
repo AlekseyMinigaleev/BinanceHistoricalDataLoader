@@ -3,7 +3,7 @@ using Domain.Models.Report;
 
 namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
 {
-    internal class CandlestickWithKlines(
+    internal class CandlestickWithKlinesDTO(
         List<Candlestick> candlesticks,
         List<Kline> klines)
     {
