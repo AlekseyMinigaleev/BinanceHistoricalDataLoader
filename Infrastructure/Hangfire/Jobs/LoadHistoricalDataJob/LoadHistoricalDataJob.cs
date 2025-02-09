@@ -3,6 +3,9 @@ using Domain.Extensions;
 using Domain.Models.Job;
 using Domain.Models.Kline;
 using Domain.Models.Report;
+using Hangfire;
+using Hangfire.Console;
+using Hangfire.Server;
 using Infrastructure.Extensions;
 using MongoDB.Driver;
 using Newtonsoft.Json.Linq;
@@ -16,17 +19,30 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
         private readonly IMongoDatabase _db = db;
         private readonly IMongoCollection<Job> _jobCollection = db.GetCollection<Job>(nameof(Job));
 
+        private PerformContext _performContext;
+
         public async Task LoadHistoricalDataAsync(
             Job job,
+            PerformContext context,
             CancellationToken cancellationToken)
         {
+            _performContext = context;
+
             try
             {
+                _performContext.WriteLine("Starting historical data loading job");
+                context.WriteLine($"Processing job with ID: {job.Id}");
                 await ProcessAsync(job, cancellationToken);
+                _performContext.WriteLine($"Historical data loading job completed successfully");
+                _performContext.WriteLine($"StartTime: {job.StartTime}");
+                _performContext.WriteLine($"EndTime: {job.EndTime}");
+                _performContext.WriteLine($"ReportId: {job.ReportId}");
             }
             catch (Exception ex)
             {
+                _performContext.WriteLine($"Error occurred during job execution: {ex.Message}");
                 await HandleExceptionAsync(job, ex);
+                _performContext.WriteLine("Job data has been updated with error details.");
             }
         }
 
@@ -36,7 +52,10 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
         {
             var isRetryJob = await IsRetryJobAsync(job.Id, cancellationToken);
             if (isRetryJob)
+            {
+                _performContext.WriteLine("This is a retry job. Throwing JobInterruptedException.");
                 throw new JobInterruptedException();
+            }
 
             await SetupJobInitialStateAsync(job, cancellationToken);
 
@@ -49,10 +68,18 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
                 jobId: job.Id,
                 candlesticks: candlestickWithKlines.Candlesticks);
 
+            _performContext.WriteLine("Start saving results to Database");
+
+            _performContext.WriteLine("Saving klines to database");
             await SaveKlinesToDbAsync(candlestickWithKlines.Kline, cancellationToken);
+
+            _performContext.WriteLine("Saving report to database.");
             await SaveReportToDbAsync(report, cancellationToken);
 
+            _performContext.WriteLine("Setting job completion results.");
             await SetJobCompletionResultsAsync(job, report.Id, cancellationToken);
+
+            _performContext.WriteLine("Saving results to Database Completed");
         }
 
         private async Task<bool> IsRetryJobAsync(Guid jobId, CancellationToken cancellationToken)
@@ -86,6 +113,7 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
             var allKlines = new List<Kline>();
             foreach (var symbol in parameters.Symbols)
             {
+                _performContext.WriteLine($"Fetching Binance data for symbol: {symbol}");
                 var klines = await FetchBinanceData(
                     symbol,
                     parameters.StartDate,

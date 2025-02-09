@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using Hangfire.Console;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
@@ -49,13 +50,10 @@ namespace Infrastructure.Hangfire
                         },
                         Prefix = hangfireConfiguration.Prefix,
                         CheckConnection = true,
-                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.Poll,
-                        //QueuePollInterval = TimeSpan.FromSeconds(15),
-                        //JobExpirationCheckInterval = TimeSpan.FromMinutes(1),
-                        //CountersAggregateInterval = TimeSpan.FromMinutes(1),
-                        //SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
+                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.Poll
                     }));
 
+            GlobalConfiguration.Configuration.UseConsole();
             return services;
         }
     }

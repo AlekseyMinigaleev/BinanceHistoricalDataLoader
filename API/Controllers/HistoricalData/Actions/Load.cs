@@ -56,7 +56,7 @@ namespace API.Controllers.HistoricalData.Actions
                 await jobs.InsertOneAsync(job, cancellationToken: cancellationToken);
 
                 _backgroundJobClient.Enqueue<ILoadHistoricalDataJob>(service =>
-                    service.LoadHistoricalDataAsync(job, cancellationToken));
+                    service.LoadHistoricalDataAsync(job, default, cancellationToken));
 
                 return job.Id;
             }
