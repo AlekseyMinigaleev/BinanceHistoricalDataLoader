@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Domain.Models.Job;
+using Hangfire;
+using Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob;
 using MediatR;
 using MongoDB.Driver;
 
@@ -36,11 +38,13 @@ namespace API.Controllers.HistoricalData.Actions
 
         public class Handler(
             IMapper mapper,
-            IMongoDatabase db)
+            IMongoDatabase db,
+            IBackgroundJobClient backgroundJobClient)
             : IRequestHandler<LoadQuery, Guid>
         {
             private readonly IMapper _mapper = mapper;
             private readonly IMongoDatabase _db = db;
+            private readonly IBackgroundJobClient _backgroundJobClient = backgroundJobClient;
 
             public async Task<Guid> Handle(
                 LoadQuery request,
@@ -51,7 +55,8 @@ namespace API.Controllers.HistoricalData.Actions
                 var jobs = _db.GetCollection<Job>(nameof(Job));
                 await jobs.InsertOneAsync(job, cancellationToken: cancellationToken);
 
-                //TODO: запуск задачи
+                _backgroundJobClient.Enqueue<ILoadHistoricalDataJob>(service =>
+                    service.LoadHistoricalDataAsync(job, cancellationToken));
 
                 return job.Id;
             }

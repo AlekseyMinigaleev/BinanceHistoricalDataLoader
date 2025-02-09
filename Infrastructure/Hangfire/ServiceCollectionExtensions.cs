@@ -4,6 +4,7 @@ using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
 using Infrastructure.Extensions;
 using Infrastructure.Hangfire.ConfigurationModels;
+using Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,7 @@ namespace Infrastructure.Hangfire
 
             services.AddHangfire(connectionString, hangfireConfiguration);
             services.AddHangfireServer();
+            services.AddScoped<ILoadHistoricalDataJob, LoadHistoricalDataJob>();
 
             return services;
         }
