@@ -1,11 +1,14 @@
 ﻿namespace Domain.Models.Candlestick
 {
-    public class Candlestick : BaseModel
+    public class Candlestick(
+        string symbol,
+        Interval interval,
+        ICollection<Kline> data) : BaseModel()
     {
-        public string Symbol { get; set; }
+        public string Symbol { get; set; } = symbol;
 
-        public Interval Interval { get; set; }
+        public Interval Interval { get; set; } = interval;
 
-        public ICollection<Kline> Data { get; set; }
+        public ICollection<Kline> Data { get; set; } = data;
     }
 }

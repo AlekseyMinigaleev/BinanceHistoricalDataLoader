@@ -14,12 +14,12 @@
 
         public string? ErrorMessage { get; set; }
 
-        public Job(JobParameters parameters)
+        public Job(JobParameters parameters) : base()
         {
             Parameters = parameters;
         }
 
-        private Job()
+        private Job() :base()
         { }
     }
 }

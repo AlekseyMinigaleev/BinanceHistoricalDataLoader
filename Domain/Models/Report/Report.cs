@@ -1,9 +1,12 @@
 ﻿namespace Domain.Models.Report
 {
-    public class Report : BaseModel
+    public class Report(
+        Guid jobId,
+        ICollection<CandlestickLink> candlestickLinks)
+        : BaseModel()
     {
-        public Guid JobId { get; set; }
+        public Guid JobId { get; set; } = jobId;
 
-        public ICollection<CandlestickLink> CandlestickLinks { get; set; }
+        public ICollection<CandlestickLink> CandlestickLinks { get; set; } = candlestickLinks;
     }
 }

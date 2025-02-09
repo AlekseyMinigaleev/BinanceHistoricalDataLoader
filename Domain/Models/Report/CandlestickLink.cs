@@ -1,9 +1,11 @@
 ﻿namespace Domain.Models.Report
 {
-    public class CandlestickLink
+    public class CandlestickLink(
+        string symbol,
+        Guid candlestickId)
     {
-        public string Symbol { get; set; }
+        public string Symbol { get; set; } = symbol;
 
-        public Guid CandlestickId { get; set; }
+        public Guid CandlestickId { get; set; } = candlestickId;
     }
 }

@@ -7,5 +7,18 @@
         public DateTime StartDate { get; set; }
 
         public DateTime EndDate { get; set; }
+
+        public JobParameters(
+            ICollection<string> symbols,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            Symbols = symbols;
+            StartDate = startDate;
+            EndDate = endDate;
+        }
+
+        private JobParameters()
+        { }
     }
 }
