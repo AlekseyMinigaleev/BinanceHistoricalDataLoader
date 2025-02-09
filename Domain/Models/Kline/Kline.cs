@@ -1,4 +1,4 @@
-﻿namespace Domain.Models.Candlestick
+﻿namespace Domain.Models.Kline
 {
     public class Kline(
         long openTime,
@@ -12,6 +12,7 @@
         int numberOfTrades,
         double takerBuyBaseAssetVolume,
         double takerBuyQuoteAssetVolume)
+        : BaseModel()
     {
         public long OpenTime { get; set; } = openTime;
 

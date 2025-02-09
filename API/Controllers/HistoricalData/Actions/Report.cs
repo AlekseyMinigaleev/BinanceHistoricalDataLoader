@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Domain.Extensions;
-using Domain.Models.Candlestick;
+using Domain.Models.Kline;
+using Domain.Models.Report;
 using MediatR;
 using MongoDB.Driver;
 
@@ -41,7 +42,7 @@ namespace API.Controllers.HistoricalData.Actions
             {
                 CreateMap<Candlestick, CandlestickVM>()
                     .ForMember(dest => dest.Interval, opt => opt.MapFrom(src => src.Interval.GetDescription()))
-                    .ForMember(dest => dest.Data, opt => opt.MapFrom(src => src.Data));
+                    .ForMember(dest => dest.Data, opt => opt.Ignore());
 
                 CreateMap<Kline, KlineVM>();
             }
@@ -63,14 +64,22 @@ namespace API.Controllers.HistoricalData.Actions
                 if (report is null)
                     return null;
 
-                var candlestickIds = report.CandlestickLinks
-                    .Select(x => x.CandlestickId);
+                var klineIdsByCandlestickDictionary = report.Candlesticks
+                    .ToDictionary(key => key, value => value.KlineIds);
 
-                var candlesticks = await GetCandleSticksByIdsAsync(candlestickIds, cancellationToken);
+                var result = new List<CandlestickVM>();
 
-                var candlestickVMs = _mapper.Map<CandlestickVM[]>(candlesticks);
+                foreach (var kvp in klineIdsByCandlestickDictionary)
+                {
+                    var candlestickVM = _mapper.Map<CandlestickVM>(kvp.Key);
+                    var klines = await GetKlinesByIdsAsync(kvp.Value, cancellationToken);
+                    var klineVms = _mapper.Map<List<KlineVM>>(klines);
+                    candlestickVM.Data = klineVms;
 
-                return candlestickVMs;
+                    result.Add(candlestickVM);
+                }
+
+                return [.. result];
             }
 
             private async Task<Domain.Models.Report.Report?> GetReportByIdAsync(
@@ -87,14 +96,14 @@ namespace API.Controllers.HistoricalData.Actions
                 return report;
             }
 
-            private async Task<List<Candlestick>> GetCandleSticksByIdsAsync(
-                IEnumerable<Guid> candlestickIds,
+            private async Task<List<Kline>> GetKlinesByIdsAsync(
+                IEnumerable<Guid> klineIds,
                 CancellationToken cancellationToken)
             {
-                var candlesticks = _database.GetCollection<Candlestick>(nameof(Candlestick));
+                var candlesticks = _database.GetCollection<Kline>(nameof(Kline));
 
-                var filter = Builders<Candlestick>.Filter
-                    .In(x => x.Id, candlestickIds);
+                var filter = Builders<Kline>.Filter
+                    .In(x => x.Id, klineIds);
 
                 var resultCandlesticks = await candlesticks
                     .Find(filter)

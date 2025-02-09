@@ -1,14 +1,14 @@
-﻿namespace Domain.Models.Candlestick
+﻿namespace Domain.Models.Report
 {
     public class Candlestick(
         string symbol,
         Interval interval,
-        ICollection<Kline> data) : BaseModel()
+        ICollection<Guid> klineIds)
     {
         public string Symbol { get; set; } = symbol;
 
         public Interval Interval { get; set; } = interval;
 
-        public ICollection<Kline> Data { get; set; } = data;
+        public ICollection<Guid> KlineIds { get; set; } = klineIds;
     }
 }

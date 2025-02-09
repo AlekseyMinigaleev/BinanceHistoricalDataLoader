@@ -1,5 +1,5 @@
-﻿using Domain.Models.Candlestick;
-using Domain.Models.Job;
+﻿using Domain.Models.Job;
+using Domain.Models.Kline;
 using Domain.Models.Report;
 using MongoDB.Driver;
 
@@ -30,7 +30,7 @@ namespace Infrastructure.MongoDb.Services.MongoDbInitializer
                 cancellationToken);
 
             await EnsureCreateCollectionAsync(
-                nameof(Candlestick),
+                nameof(Kline),
                 existingCollections,
                 cancellationToken);
         }

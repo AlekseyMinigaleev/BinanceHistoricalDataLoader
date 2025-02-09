@@ -1,6 +1,6 @@
 ﻿using Domain.Extensions;
-using Domain.Models.Candlestick;
 using Domain.Models.Job;
+using Domain.Models.Kline;
 using Domain.Models.Report;
 using Infrastructure.Extensions;
 using MongoDB.Driver;
@@ -40,16 +40,16 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
 
             await SetupJobInitialStateAsync(job, cancellationToken);
 
-            var candlestickWithLinks = await CreateCandlesticksWithLinksAndLinksAsync(
+            var candlestickWithKlines = await CreateCandlesticksWithLinksAndLinksAsync(
                 job.Parameters,
                 Interval.OneDay,
                 cancellationToken);
 
             var report = new Report(
                 jobId: job.Id,
-                candlestickLinks: candlestickWithLinks.CandlestickLinks);
+                candlesticks: candlestickWithKlines.Candlesticks);
 
-            await SaveCandleSticksToDbAsync(candlestickWithLinks.Candlesticks, cancellationToken);
+            await SaveKlinesToDbAsync(candlestickWithKlines.Kline, cancellationToken);
             await SaveReportToDbAsync(report, cancellationToken);
 
             await SetJobCompletionResultsAsync(job, report.Id, cancellationToken);
@@ -77,35 +77,37 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
                 cancellationToken: cancellationToken);
         }
 
-        private async Task<CandlestickWithLinksDTO> CreateCandlesticksWithLinksAndLinksAsync(
+        private async Task<CandlestickWithKlines> CreateCandlesticksWithLinksAndLinksAsync(
             JobParameters parameters,
             Interval interval,
             CancellationToken cancellationToken)
         {
             var candlesticks = new List<Candlestick>();
-            var candlestickLinks = new List<CandlestickLink>();
+            var allKlines = new List<Kline>();
             foreach (var symbol in parameters.Symbols)
             {
                 var klines = await FetchBinanceData(
-                symbol,
+                    symbol,
                     parameters.StartDate,
                     parameters.EndDate,
                     interval,
                     cancellationToken);
 
+                allKlines.AddRange(klines); 
+
+                var klineIds = klines
+                    .Select(x => x.Id)
+                    .ToList();
+
                 var candlestick = new Candlestick(
                     symbol: symbol,
                     interval: interval,
-                    data: klines);
+                    klineIds: klineIds);
 
                 candlesticks.Add(candlestick);
-
-                candlestickLinks.Add(new CandlestickLink(
-                    symbol: symbol,
-                    candlestickId: candlestick.Id));
             }
 
-            return new CandlestickWithLinksDTO(candlesticks, candlestickLinks);
+            return new CandlestickWithKlines(candlesticks, allKlines);
         }
 
         private async Task<List<Kline>> FetchBinanceData(
@@ -134,13 +136,13 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
             return ParseBinanceResponse(responseBody);
         }
 
-        private async Task SaveCandleSticksToDbAsync(
-            List<Candlestick> candlesticksToInsert,
+        private async Task SaveKlinesToDbAsync(
+            List<Kline> klinesToInsert,
             CancellationToken cancellationToken)
         {
-            var candlesticks = _db.GetCollection<Candlestick>(nameof(Candlestick));
+            var candlesticks = _db.GetCollection<Kline>(nameof(Kline));
             await candlesticks.InsertManyAsync(
-                candlesticksToInsert,
+                klinesToInsert,
                 cancellationToken: cancellationToken);
         }
 

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Domain.Models.Candlestick
+namespace Domain.Models.Report
 {
     public enum Interval
     {
