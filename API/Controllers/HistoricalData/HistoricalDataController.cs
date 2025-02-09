@@ -10,6 +10,7 @@ namespace API.Controllers.HistoricalData
         [HttpPost("load")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Guid>> Load(
             [FromBody] Load.LoadQuery parameters,
             CancellationToken cancellationToken)
@@ -17,6 +18,25 @@ namespace API.Controllers.HistoricalData
             var id = await _mediator.Send(parameters, cancellationToken);
 
             return Ok(id);
+        }
+
+        [HttpPost("status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<Guid>> Status(
+            [FromQuery] Guid jobId,
+            CancellationToken cancellationToken)
+        {
+            var request = new Status.StatusQuery { JobId = jobId };
+
+            var response = await _mediator.Send(request, cancellationToken);
+
+            if(response is null)
+                return NotFound();
+
+            return Ok(response);
         }
     }
 }
