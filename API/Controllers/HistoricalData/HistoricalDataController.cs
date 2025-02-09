@@ -38,5 +38,23 @@ namespace API.Controllers.HistoricalData
 
             return Ok(response);
         }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost("report")]
+        public async Task<ActionResult<Actions.Report.CandlestickVM[]>> Report(
+            [FromQuery] Guid reportId,
+            CancellationToken cancellationToken)
+        {
+            var request = new Actions.Report.ReportQuery { Id = reportId };
+            var result = await _mediator.Send(request, cancellationToken);
+
+            if (result is null)
+                return NotFound();
+
+            return Ok(result);
+        }
     }
 }
