@@ -1,4 +1,5 @@
-﻿using Domain.Extensions;
+﻿using Domain.Exceptions;
+using Domain.Extensions;
 using Domain.Models.Job;
 using Domain.Models.Kline;
 using Domain.Models.Report;
@@ -33,10 +34,9 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
             Job job,
             CancellationToken cancellationToken)
         {
-            //TODO:
-            //var isRetryJob = await IsRetryJobAsync(job.Id,cancellationToken);
-            //if (isRetryJob)
-            //    throw new Exception("123123");
+            var isRetryJob = await IsRetryJobAsync(job.Id, cancellationToken);
+            if (isRetryJob)
+                throw new JobInterruptedException();
 
             await SetupJobInitialStateAsync(job, cancellationToken);
 
@@ -55,7 +55,7 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
             await SetJobCompletionResultsAsync(job, report.Id, cancellationToken);
         }
 
-        private async Task<bool> IsRetryJobAsync(Guid jobId,CancellationToken cancellationToken)
+        private async Task<bool> IsRetryJobAsync(Guid jobId, CancellationToken cancellationToken)
         {
             var job = await (await _jobCollection
                 .FindAsync(x => x.Id == jobId, cancellationToken: cancellationToken))
@@ -93,7 +93,7 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
                     interval,
                     cancellationToken);
 
-                allKlines.AddRange(klines); 
+                allKlines.AddRange(klines);
 
                 var klineIds = klines
                     .Select(x => x.Id)

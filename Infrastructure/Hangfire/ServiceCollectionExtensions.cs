@@ -49,7 +49,11 @@ namespace Infrastructure.Hangfire
                         },
                         Prefix = hangfireConfiguration.Prefix,
                         CheckConnection = true,
-                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.Poll
+                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.Poll,
+                        //QueuePollInterval = TimeSpan.FromSeconds(15),
+                        //JobExpirationCheckInterval = TimeSpan.FromMinutes(1),
+                        //CountersAggregateInterval = TimeSpan.FromMinutes(1),
+                        //SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
                     }));
 
             return services;
