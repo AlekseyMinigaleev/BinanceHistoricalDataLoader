@@ -1,52 +1,52 @@
-﻿using System.Runtime.Serialization;
+﻿using System.ComponentModel;
 
 namespace Domain.Models.Candlestick
 {
     public enum Interval
     {
-        [EnumMember(Value = "1m")]
+        [Description("1m")]
         OneMinute,
 
-        [EnumMember(Value = "3m")]
+        [Description("3m")]
         ThreeMinutes,
 
-        [EnumMember(Value = "5m")]
+        [Description("5m")]
         FiveMinutes,
 
-        [EnumMember(Value = "15m")]
+        [Description("15m")]
         FifteenMinutes,
 
-        [EnumMember(Value = "30m")]
+        [Description("30m")]
         ThirtyMinutes,
 
-        [EnumMember(Value = "1h")]
+        [Description("1h")]
         OneHour,
 
-        [EnumMember(Value = "2h")]
+        [Description("2h")]
         TwoHours,
 
-        [EnumMember(Value = "4h")]
+        [Description("4h")]
         FourHours,
 
-        [EnumMember(Value = "6h")]
+        [Description("6h")]
         SixHours,
 
-        [EnumMember(Value = "8h")]
+        [Description("8h")]
         EightHours,
 
-        [EnumMember(Value = "12h")]
+        [Description("12h")]
         TwelveHours,
 
-        [EnumMember(Value = "1d")]
+        [Description("1d")]
         OneDay,
 
-        [EnumMember(Value = "3d")]
+        [Description("3d")]
         ThreeDays,
 
-        [EnumMember(Value = "1w")]
+        [Description("1w")]
         OneWeek,
 
-        [EnumMember(Value = "1M")]
+        [Description("1M")]
         OneMonth
     }
 }

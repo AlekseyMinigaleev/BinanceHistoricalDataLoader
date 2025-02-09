@@ -104,7 +104,7 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
             var client = new HttpClient();
             var url = $"https://api.binance.com/api/v3/klines" +
                 $"?symbol={symbol}" +
-                $"&interval={interval.ToApiString()}" +
+                $"&interval={interval.GetDescription()}" +
                 $"&startTime={startDate.ToUnixTimeMilliseconds()}" +
                 $"&endTime={endDate.ToUnixTimeMilliseconds()}";
 
