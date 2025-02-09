@@ -33,6 +33,11 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
             Job job,
             CancellationToken cancellationToken)
         {
+            //TODO:
+            //var isRetryJob = await IsRetryJobAsync(job.Id,cancellationToken);
+            //if (isRetryJob)
+            //    throw new Exception("123123");
+
             await SetupJobInitialStateAsync(job, cancellationToken);
 
             var candlestickWithLinks = await CreateCandlesticksWithLinksAndLinksAsync(
@@ -48,6 +53,15 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
             await SaveReportToDbAsync(report, cancellationToken);
 
             await SetJobCompletionResultsAsync(job, report.Id, cancellationToken);
+        }
+
+        private async Task<bool> IsRetryJobAsync(Guid jobId,CancellationToken cancellationToken)
+        {
+            var job = await (await _jobCollection
+                .FindAsync(x => x.Id == jobId, cancellationToken: cancellationToken))
+                .FirstAsync(cancellationToken);
+
+            return job.Status == JobStatus.InProcessing;
         }
 
         private async Task SetupJobInitialStateAsync(
