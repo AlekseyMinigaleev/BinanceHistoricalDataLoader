@@ -3,7 +3,6 @@ using Domain.Extensions;
 using Domain.Models.Job;
 using Domain.Models.Kline;
 using Domain.Models.Report;
-using Hangfire;
 using Hangfire.Console;
 using Hangfire.Server;
 using Infrastructure.Extensions;
@@ -43,6 +42,8 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
                 _performContext.WriteLine($"Error occurred during job execution: {ex.Message}");
                 await HandleExceptionAsync(job, ex);
                 _performContext.WriteLine("Job data has been updated with error details.");
+
+                throw;
             }
         }
 
