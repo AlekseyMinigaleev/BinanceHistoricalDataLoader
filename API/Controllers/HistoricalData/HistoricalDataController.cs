@@ -7,7 +7,7 @@ namespace API.Controllers.HistoricalData
 {
     [Route("api/historical-data")]
     public class HistoricalDataController(
-        IMediator mediator) 
+        IMediator mediator)
         : BaseController(mediator)
     {
         [HttpPost("load")]
@@ -56,11 +56,11 @@ namespace API.Controllers.HistoricalData
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("report")]
-        public async Task<ActionResult<Actions.Report.CandlestickVM[]>> Report(
+        public async Task<ActionResult<Report.CandlestickVM[]>> Report(
             [FromQuery] Guid reportId,
             CancellationToken cancellationToken)
         {
-            var request = new Actions.Report.ReportQuery { Id = reportId };
+            var request = new Report.ReportQuery { Id = reportId };
             var result = await _mediator.Send(request, cancellationToken);
 
             if (result is null)
