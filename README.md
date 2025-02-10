@@ -84,23 +84,6 @@ docker-compose up -d
 docker-compose down
 ```
 
-### 1. Клонирование репозитория
-```sh
-git clone https://github.com/AlekseyMinigaleev/BinanceHistoricalDataLoader.git
-cd BinanceHistoricalDataLoader
-```
-### 2. Запуск MongoDB
-Если MongoDB не установлена, можно запустить её через Docker:
-```sh
-docker run -d --name mongodb -p 27017:27017 mongo
-```
-
-### 3. Запуск приложения
-```sh
-dotnet restore
-dotnet run
-```
-
 ## Развёртывание
 ### 1. Клонирование репозитория
 ```sh
