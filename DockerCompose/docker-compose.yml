@@ -4,8 +4,8 @@ services:
     container_name: mongo_container
     restart: always
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=user
-      - MONGO_INITDB_ROOT_PASSWORD=password
+        - MONGO_INITDB_ROOT_USERNAME=user
+        - MONGO_INITDB_ROOT_PASSWORD=password
     ports:
       - "27017:27017"
     volumes:
@@ -26,8 +26,13 @@ services:
       mongo:
         condition: service_healthy
     environment:
-      - MONGO_URI=mongodb://user:password@mongo:27017/
-      - ASPNETCORE_URLS=http://+:5000;
+        - ConnectionStrings__MongoDb=mongodb://user:password@mongo:27017/
+        - ConnectionStrings__Hangfire=mongodb://user:password@mongo:27017/
+        - MongoDbConfiguration__DatabaseName=BinanceHistoricalData
+        - HangfireConfiguration__CompatibilityLevel=170
+        - HangfireConfiguration__DatabaseName=BinanceHistoricalData
+        - HangfireConfiguration__Prefix=hangfire
+        - ASPNETCORE_URLS=http://+:5000;
     ports:
       - "5000:5000"
 
