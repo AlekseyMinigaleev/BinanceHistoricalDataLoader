@@ -28,7 +28,7 @@ GET https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&startTime=1
 ## Логирование
 Логирование приложения выполнено с помощью **Serilog**:
 - В консоль выводятся логи уровня `Information`
-- В файл записываются логи уровня `Error`
+- В файл `BinanceHistoricalDataLoader/API/Logs/` записываются логи уровня `Error`
 - Процесс выполнения задач логируется в **Hangfire Console**
 
 ## Установка и запуск
