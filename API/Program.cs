@@ -1,3 +1,4 @@
+using API;
 using API.Extensions;
 using FluentValidation;
 using Hangfire;
@@ -25,11 +26,12 @@ builder.Host.UseSerilog();
 var app = builder.Build();
 
 await app.InitApp();
-
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHangfireDashboard();
-app.UseHttpsRedirection();
 app.UseAuthorization();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = [new HangFireAuthorizationFilter()]
+});
 app.MapControllers();
 app.Run();
