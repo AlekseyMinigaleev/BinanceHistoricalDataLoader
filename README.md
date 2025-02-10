@@ -11,7 +11,7 @@ Binance Historical Data Loader — это ASP.NET Core приложение, к�
 - **FluentValidation** — валидация входных данных
 - **Serilog** — логирование работы приложения
 - **Hangfire Console** — логирование состояния фоновых задач
-
+  
 ### API Binance
 Для получения исторических данных используется API Binance:
 - **Эндпоинт**: [`/api/v3/klines`](https://developers.binance.info/docs/binance-spot-api-docs/rest-api/market-data-endpoints#klinecandlestick-data)
@@ -32,17 +32,18 @@ GET https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&startTime=1
 - Процесс выполнения задач логируется в **Hangfire Console**
 
 ## Установка и запуск
-### 1. docker-compose
- - Создайте docker-compose.yml файл
-```
+
+## Docker
+### 1. Создание `docker-compose.yml`
+```yaml
 services:
   mongo:
     image: mongo:6.0
     container_name: mongo_container
     restart: always
     environment:
-        - MONGO_INITDB_ROOT_USERNAME=user
-        - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=password
     ports:
       - "27017:27017"
     volumes:
@@ -55,32 +56,30 @@ services:
       start_period: 20s
 
   binance_loader:
-    build:
-      context: ../
-      dockerfile: API/Dockerfile
+    image: alekseyminigaleev/binance_loader
     container_name: binance_loader_container
     depends_on:
       mongo:
         condition: service_healthy
     environment:
-        - ConnectionStrings__MongoDb=mongodb://user:password@mongo:27017/
-        - ConnectionStrings__Hangfire=mongodb://user:password@mongo:27017/
-        - MongoDbConfiguration__DatabaseName=BinanceHistoricalData
-        - HangfireConfiguration__CompatibilityLevel=170
-        - HangfireConfiguration__DatabaseName=BinanceHistoricalData
-        - HangfireConfiguration__Prefix=hangfire
-        - ASPNETCORE_URLS=http://+:5000;
+      - ConnectionStrings__MongoDb=mongodb://user:password@mongo:27017/
+      - ConnectionStrings__Hangfire=mongodb://user:password@mongo:27017/
+      - MongoDbConfiguration__DatabaseName=BinanceHistoricalData
+      - HangfireConfiguration__CompatibilityLevel=170
+      - HangfireConfiguration__DatabaseName=BinanceHistoricalData
+      - HangfireConfiguration__Prefix=hangfire
+      - ASPNETCORE_URLS=http://+:5000;
     ports:
       - "5000:5000"
 
 volumes:
   mongo_data:
 ```
-- запуск контейнеров
+### 2. Запуск контейнеров
 ```sh
 docker-compose up -d
 ```
-- остановка контейнеров
+### 3. Остановка контейнеров
 ```sh
 docker-compose down
 ```
@@ -101,7 +100,29 @@ docker run -d --name mongodb -p 27017:27017 mongo
 dotnet restore
 dotnet run
 ```
-После успешного запуска сервер будет доступен по адресу `http://localhost:5000`.
-swagger доступен по адресу `/swagger`
-hangfire dashboard доступен по адресу `/hangfire`
+
+## Развёртывание
+### 1. Клонирование репозитория
+```sh
+git clone https://github.com/AlekseyMinigaleev/BinanceHistoricalDataLoader.git
+cd BinanceHistoricalDataLoader
+```
+
+### 2. Локальный запуск MongoDB (если не установлена)
+```sh
+docker run -d --name mongodb -p 27017:27017 mongo
+```
+
+### 3. Запуск приложения
+```sh
+dotnet restore
+dotnet run
+```
+После успешного запуска:
+- **API** доступно по адресу: `http://localhost:5000`
+- **Swagger UI**: `http://localhost:5000/swagger`
+- **Hangfire Dashboard**: `http://localhost:5000/hangfire`
+
+
+
 
