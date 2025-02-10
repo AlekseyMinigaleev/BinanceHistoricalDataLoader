@@ -84,11 +84,36 @@ docker-compose up -d
 docker-compose down
 ```
 
-## Развёртывание
+## Сборка проекта
 ### 1. Клонирование репозитория
 ```sh
 git clone https://github.com/AlekseyMinigaleev/BinanceHistoricalDataLoader.git
 cd BinanceHistoricalDataLoader
+```
+### 2. Настройка `appsettings.json`
+Перед запуском приложения убедитесь, что файл конфигурации `appsettings.json` содержит корректные параметры подключения.  
+
+Файл находится по пути:  
+`BinanceHistoricalDataLoader/API/appsettings.json`
+
+**Пример содержимого:**
+```json
+{
+  "ConnectionStrings": {
+    "MongoDb": "mongodb://user:password@localhost:27017/",
+    "Hangfire": "mongodb://user:password@localhost:27017/"
+  },
+
+  "MongoDbConfiguration": {
+    "DatabaseName": "BinanceHistoricalData"
+  },
+
+  "HangfireConfiguration": {
+    "CompatibilityLevel": 170,
+    "DatabaseName": "BinanceHistoricalData",
+    "Prefix": "hangfire"
+  }
+}
 ```
 
 ### 2. Локальный запуск MongoDB (если не установлена)
