@@ -1,11 +1,14 @@
 ﻿using API.Controllers.HistoricalData.Actions;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.HistoricalData
 {
     [Route("api/historical-data")]
-    public class HistoricalDataController(IMediator mediator) : BaseController(mediator)
+    public class HistoricalDataController(
+        IMediator mediator) 
+        : BaseController(mediator)
     {
         [HttpPost("load")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -13,8 +16,17 @@ namespace API.Controllers.HistoricalData
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Guid>> Load(
             [FromBody] Load.LoadQuery parameters,
+            [FromServices] IValidator<Load.LoadQuery> validator,
             CancellationToken cancellationToken)
         {
+            await ValidateAndChangeModelStateAsync(
+                validator,
+                parameters,
+                cancellationToken);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var id = await _mediator.Send(parameters, cancellationToken);
 
             return Ok(id);
@@ -33,7 +45,7 @@ namespace API.Controllers.HistoricalData
 
             var response = await _mediator.Send(request, cancellationToken);
 
-            if(response is null)
+            if (response is null)
                 return NotFound();
 
             return Ok(response);

@@ -1,4 +1,5 @@
 using API.Extensions;
+using FluentValidation;
 using Hangfire;
 using Infrastructure;
 using Serilog;
@@ -17,6 +18,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(typeof(Program).GetTypeInfo().Assembly));
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Host.UseSerilog();
 

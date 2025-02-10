@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Models.Job;
+using FluentValidation;
 using Hangfire;
 using Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob;
 using MediatR;
@@ -16,6 +17,36 @@ namespace API.Controllers.HistoricalData.Actions
             public DateTime StartDate { get; set; }
 
             public DateTime EndDate { get; set; }
+        }
+
+        public class Validator : AbstractValidator<LoadQuery>
+        {
+            public Validator()
+            {
+                ClassLevelCascadeMode = CascadeMode.Stop;
+
+                RuleFor(x => x.Pairs)
+                    .NotNull()
+                        .WithMessage("The Pairs collection must not be null.")
+                    .Must(pairs => pairs.Count == 2)
+                        .WithMessage("The Pairs collection must contain exactly 2 elements.");
+
+                RuleFor(x => x.StartDate)
+                    .NotEmpty()
+                        .WithMessage("StartDate must be provided.")
+                    .GreaterThan(DateTime.MinValue)
+                        .WithMessage("StartDate must be a valid date.");
+
+                RuleFor(x => x.EndDate)
+                    .NotEmpty()
+                        .WithMessage("EndDate must be provided.")
+                    .GreaterThan(DateTime.MinValue)
+                        .WithMessage("EndDate must be a valid date.");
+
+                RuleFor(x => x)
+                    .Must(query => query.EndDate > query.StartDate)
+                    .WithMessage("EndDate must be greater than StartDate.");
+            }
         }
 
         public class Profiler : Profile
