@@ -14,7 +14,7 @@ namespace API.Controllers.HistoricalData
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<Guid>> Load(
+        public async Task<ActionResult<Load.LoadResponse>> Load(
             [FromBody] Load.LoadQuery parameters,
             [FromServices] IValidator<Load.LoadQuery> validator,
             CancellationToken cancellationToken)
@@ -27,9 +27,9 @@ namespace API.Controllers.HistoricalData
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var id = await _mediator.Send(parameters, cancellationToken);
+            var response = await _mediator.Send(parameters, cancellationToken);
 
-            return Ok(id);
+            return Ok(response);
         }
 
         [HttpPost("status")]

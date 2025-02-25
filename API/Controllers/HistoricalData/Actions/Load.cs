@@ -10,13 +10,18 @@ namespace API.Controllers.HistoricalData.Actions
 {
     public class Load
     {
-        public class LoadQuery : IRequest<Guid>
+        public class LoadQuery : IRequest<LoadResponse>
         {
             public ICollection<string> Pairs { get; set; }
 
             public DateTime StartDate { get; set; }
 
             public DateTime EndDate { get; set; }
+        }
+
+        public class LoadResponse
+        {
+            public Guid JobId { get; set; }
         }
 
         public class Validator : AbstractValidator<LoadQuery>
@@ -64,6 +69,9 @@ namespace API.Controllers.HistoricalData.Actions
 
                 CreateMap<LoadQuery, JobParameters>()
                     .ForMember(dest => dest.Symbols, opt => opt.MapFrom(src => src.Pairs));
+
+                CreateMap<Job, LoadResponse>()
+                    .ForMember(dest => dest.JobId, opt => opt.MapFrom(src => src.Id));
             }
         }
 
@@ -71,17 +79,19 @@ namespace API.Controllers.HistoricalData.Actions
             IMapper mapper,
             IMongoDatabase db,
             IBackgroundJobClient backgroundJobClient)
-            : IRequestHandler<LoadQuery, Guid>
+            : IRequestHandler<LoadQuery, LoadResponse>
         {
             private readonly IMapper _mapper = mapper;
             private readonly IMongoDatabase _db = db;
             private readonly IBackgroundJobClient _backgroundJobClient = backgroundJobClient;
 
-            public async Task<Guid> Handle(
+            public async Task<LoadResponse> Handle(
                 LoadQuery request,
                 CancellationToken cancellationToken)
             {
                 var job = _mapper.Map<Job>(request);
+
+                var response = _mapper.Map<LoadResponse>(job);
 
                 var jobs = _db.GetCollection<Job>(nameof(Job));
                 await jobs.InsertOneAsync(job, cancellationToken: cancellationToken);
@@ -89,7 +99,7 @@ namespace API.Controllers.HistoricalData.Actions
                 _backgroundJobClient.Enqueue<ILoadHistoricalDataJob>(service =>
                     service.LoadHistoricalDataAsync(job, default, cancellationToken));
 
-                return job.Id;
+                return response;
             }
         }
     }
