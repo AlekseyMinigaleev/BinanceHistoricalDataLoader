@@ -39,7 +39,8 @@ namespace Infrastructure.MongoDb
 
             BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
-            services.AddSingleton(new MongoClient(mongoClientSettings));
+            services.AddSingleton<IMongoClient>(sp =>
+                new MongoClient(mongoClientSettings));
 
             return services;
         }
@@ -50,7 +51,7 @@ namespace Infrastructure.MongoDb
         {
             services.AddScoped(provider =>
             {
-                var client = provider.GetRequiredService<MongoClient>();
+                var client = provider.GetRequiredService<IMongoClient>();
                 var db = client.GetDatabase(mongoDbConfiguration.DatabaseName);
                 return db;
             });

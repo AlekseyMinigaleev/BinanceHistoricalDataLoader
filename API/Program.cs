@@ -1,5 +1,4 @@
 using API;
-using API.Extensions;
 using FluentValidation;
 using Hangfire;
 using Infrastructure;
@@ -25,7 +24,6 @@ builder.Host.UseSerilog();
 
 var app = builder.Build();
 
-await app.InitApp();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseAuthorization();
@@ -35,3 +33,5 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 });
 app.MapControllers();
 app.Run();
+
+public partial class Program { }
