@@ -1,6 +1,7 @@
 ﻿using Domain.Models.Job;
 using Hangfire;
 using Hangfire.States;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
@@ -20,7 +21,22 @@ namespace Tests.IntegrationTests.ControllerTests.HistoricalDataTests
         [Fact]
         public async Task Load_Post_Should_CreateJobInDbAndEnqueueHangfireJob()
         {
-            var factory = _app.WithWebHostBuilder(builder =>
+            using var app = CreateApp();
+            using var httpClient = app.CreateClient();
+
+            var httpResponseMessage = await SendLoadRequest(httpClient);
+
+            httpResponseMessage.EnsureSuccessStatusCode();
+            var loadResponse = await GetLoadResponseAsync(httpResponseMessage);
+
+            VerifyLoadResponse(loadResponse);
+            await VerifyJobExistsInDb(app, loadResponse!.JobId);
+            VerifyHangfireJobEnqueued(app);
+        }
+
+        private WebApplicationFactory<Program> CreateApp()
+        {
+            var app = _app.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
@@ -34,8 +50,11 @@ namespace Tests.IntegrationTests.ControllerTests.HistoricalDataTests
                 });
             });
 
-            using var httpClient = factory.CreateClient();
+            return app;
+        }
 
+        private async Task<HttpResponseMessage> SendLoadRequest(HttpClient client)
+        {
             var requestBody = new
             {
                 Pairs = new List<string> { "EURUSD", "USDJPY" },
@@ -45,29 +64,57 @@ namespace Tests.IntegrationTests.ControllerTests.HistoricalDataTests
 
             var jsonContent = new StringContent(
                 JsonConvert.SerializeObject(requestBody),
-                Encoding.UTF8, "application/json");
+                Encoding.UTF8,
+                "application/json");
 
-            var response = await httpClient.PostAsync("/api/historical-data/load", jsonContent);
-            response.EnsureSuccessStatusCode();
-            var responseContent = await response.Content.ReadAsStringAsync();
+            var response = await client.PostAsync("/api/historical-data/load", jsonContent);
+
+            return response;
+        }
+
+        private async Task<LoadResponse?> GetLoadResponseAsync(HttpResponseMessage httpResponseMessage)
+        {
+            var responseContent = await httpResponseMessage.Content.ReadAsStringAsync();
             var loadResponse = JsonConvert.DeserializeObject<LoadResponse>(responseContent);
 
+            return loadResponse;
+        }
+
+        private void VerifyLoadResponse(LoadResponse? loadResponse)
+        {
             Assert.NotNull(loadResponse);
             Assert.NotEqual(Guid.Empty, loadResponse.JobId);
+        }
 
-            using var scope = factory.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<IMongoDatabase>();
+        private async Task VerifyJobExistsInDb(WebApplicationFactory<Program> app, Guid jobId)
+        {
+            using var scope = app.Services
+                .CreateScope();
+            var db = scope.ServiceProvider
+                .GetRequiredService<IMongoDatabase>();
+
             var jobsCollection = db.GetCollection<Job>(nameof(Job));
-            var filter = Builders<Job>.Filter.Eq(x => x.Id, loadResponse.JobId);
-            var jobDocument = await jobsCollection.Find(filter).FirstOrDefaultAsync();
+
+            var filter = Builders<Job>.Filter
+                .Eq(x => x.Id, jobId);
+
+            var jobDocument = await jobsCollection
+                .Find(filter)
+                .FirstOrDefaultAsync();
 
             Assert.NotNull(jobDocument);
+        }
 
-            var backgroundJobClientMock = scope.ServiceProvider.GetRequiredService<Mock<IBackgroundJobClient>>();
+        private void VerifyHangfireJobEnqueued(WebApplicationFactory<Program> app)
+        {
+            using var scope = app.Services.CreateScope();
+            var backgroundJobClientMock = scope.ServiceProvider
+                .GetRequiredService<Mock<IBackgroundJobClient>>();
+
             backgroundJobClientMock.Verify(
                 x => x.Create(It.IsAny<Hangfire.Common.Job>(), It.IsAny<IState>()),
                 Times.Once,
-                "Метод Create должен быть вызван один раз");
+                "Job was not enqueued");
         }
     }
 }

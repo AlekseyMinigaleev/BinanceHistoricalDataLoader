@@ -1,4 +1,5 @@
 using API;
+using API.Extensions;
 using FluentValidation;
 using Hangfire;
 using Infrastructure;
@@ -23,6 +24,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Host.UseSerilog();
 
 var app = builder.Build();
+await app.InitApp();
 
 app.UseSwagger();
 app.UseSwaggerUI();
