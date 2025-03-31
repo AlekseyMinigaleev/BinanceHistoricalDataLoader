@@ -12,12 +12,13 @@ using Newtonsoft.Json.Linq;
 namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
 {
     internal class LoadHistoricalDataJob(
-        IMongoDatabase db)
+        IMongoDatabase db,
+        IHttpClientFactory httpClientFactory)
         : ILoadHistoricalDataJob
     {
         private readonly IMongoDatabase _db = db;
         private readonly IMongoCollection<Job> _jobCollection = db.GetCollection<Job>(nameof(Job));
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
         private PerformContext _performContext;
 
