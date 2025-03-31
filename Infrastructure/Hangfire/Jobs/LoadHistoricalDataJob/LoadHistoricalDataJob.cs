@@ -17,6 +17,7 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
     {
         private readonly IMongoDatabase _db = db;
         private readonly IMongoCollection<Job> _jobCollection = db.GetCollection<Job>(nameof(Job));
+        private readonly IHttpClientFactory _httpClientFactory;
 
         private PerformContext _performContext;
 
@@ -146,7 +147,7 @@ namespace Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob
             Interval interval,
             CancellationToken cancellationToken)
         {
-            var client = new HttpClient();
+            using var client = _httpClientFactory.CreateClient();
             var url = $"https://api.binance.com/api/v3/klines" +
                 $"?symbol={symbol}" +
                 $"&interval={interval.GetDescription()}" +
