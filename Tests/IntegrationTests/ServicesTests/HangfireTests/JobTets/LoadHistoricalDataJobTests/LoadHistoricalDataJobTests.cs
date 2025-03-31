@@ -7,6 +7,7 @@ using Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
+using RichardSzalay.MockHttp;
 using Job = Domain.Models.Job.Job;
 
 namespace Tests.IntegrationTests.ServicesTests.HangfireTests.JobTets.LoadHistoricalDataJobTests
@@ -45,6 +46,22 @@ namespace Tests.IntegrationTests.ServicesTests.HangfireTests.JobTets.LoadHistori
                 actualJob.Parameters,
                 [.. actualReport!.Candlesticks],
                 db);
+        }
+
+        [Fact]
+        public async Task LoadHistoricalDataAsync_ShouldHandleException()
+        {
+            var app = _app.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureTestServices(services =>
+                {
+                    new MockHttpMessageHandler();
+                    var httpClient = _mockHttpHandler.ToHttpClient();
+                    // Настраиваем фабрику, чтобы она возвращала наш HttpClient
+                    _mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                                          .Returns(httpClient);
+                });
+            });
         }
 
         private Job CreateJob()
@@ -155,7 +172,6 @@ namespace Tests.IntegrationTests.ServicesTests.HangfireTests.JobTets.LoadHistori
         }
     }
 }
-
 
 //private async Task<List<CandlestickTestModel>> FetchExpectedCandlesticksAsync(
 //            Job expectedJob,
