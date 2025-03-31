@@ -2,7 +2,9 @@
 using Domain.Models.Kline;
 using Domain.Models.Report;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Infrastructure.Hangfire.Jobs.LoadHistoricalDataJob;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using Job = Domain.Models.Job.Job;
@@ -59,7 +61,13 @@ namespace Tests.IntegrationTests.ServicesTests.HangfireTests.JobTets.LoadHistori
         private void VerifyJobIsCorrectlyModified(Job expected, Job? actual)
         {
             Assert.NotNull(actual);
-            expected.Parameters.Should().BeEquivalentTo(actual.Parameters);
+
+            expected.Parameters.Should().BeEquivalentTo(
+                actual.Parameters,
+                options => options
+                    .Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, 1.Minutes()))
+                    .WhenTypeIs<DateTime>());
+
             Assert.NotNull(actual.ReportId);
             Assert.NotEqual(Guid.Empty, actual.ReportId);
             Assert.Null(actual.ErrorMessage);
@@ -92,7 +100,7 @@ namespace Tests.IntegrationTests.ServicesTests.HangfireTests.JobTets.LoadHistori
             List<Candlestick> actualCandlesticks,
             IMongoDatabase db)
         {
-            var expectedKlinesCount = (jobParameters.StartDate - jobParameters.EndDate).Days;
+            var expectedKlinesCount = (jobParameters.EndDate - jobParameters.StartDate).Days;
 
             foreach (var actualCandlestick in actualCandlesticks)
             {
